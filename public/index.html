@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blockchain Log Manager</title>
+</head>
+<body>
+    <h1>Blockchain Log Manager</h1>
+    
+    <!-- Form to add a new log -->
+    <h2>Add New Log</h2>
+    <form id="logForm">
+        <label for="dataHash">Data Hash:</label>
+        <input type="text" id="dataHash" name="dataHash" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Button to fetch logs -->
+    <h2>View Logs</h2>
+    <button onclick="getLogs()">Fetch Logs</button>
+    <div id="logs"></div>
+
+    <script>
+        // JavaScript for handling the form submission
+        document.getElementById('logForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const dataHash = document.getElementById('dataHash').value;
+            fetch('http://localhost:3000/addLog', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ dataHash })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Log Added:', data);
+                alert('Log added successfully!');
+            })
+            .catch(error => {
+                console.error('Error adding log:', error);
+                alert('Failed to add log.');
+            });
+        });
+
+        // JavaScript for fetching logs
+        function getLogs() {
+            fetch('http://localhost:3000/getLogs')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const logsContainer = document.getElementById('logs');
+                    logsContainer.innerHTML = ''; // Clear previous logs
+                    data.forEach(log => {
+                        const logEntry = document.createElement('p');
+                        logEntry.textContent = `Timestamp: ${log.timestamp}, Data Hash: ${log.dataHash}`;
+                        logsContainer.appendChild(logEntry);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching logs:', error);
+                    document.getElementById('logs').textContent = 'Failed to fetch logs.';
+                });
+        }
+    </script>
+</body>
+</html>
